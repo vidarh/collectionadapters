@@ -1,7 +1,8 @@
 module CollectionAdapters
   class ArraySequel
     def initialize model:, column:
-      @model = model
+      @ds    = model
+      @model = model.kind_of?(Sequel::Dataset) ? @ds.model : @ds
       @col   = column.to_sym
     end
 
@@ -24,8 +25,8 @@ module CollectionAdapters
     end
 
     def shift
-      @model.db.transaction do
-        if ob = @model.for_update.first
+      @ds.db.transaction do
+        if ob = @ds.for_update.first
           v  = ob.values[@col]
           return v if ob.delete
           raise Sequel::rollback
@@ -35,5 +36,3 @@ module CollectionAdapters
     end
   end
 end
-
-

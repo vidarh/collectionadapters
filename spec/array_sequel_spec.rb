@@ -21,6 +21,8 @@ RSpec.describe CollectionAdapters::ArraySequel do
   let(:setmodel)  { Sequel::Model(db[:test_set]) }
   let(:myary)     { adapter.new(model: arymodel, column: :data) }
   let(:myset)     { adapter.new(model: setmodel, column: :data) }
+  let(:revmodel)  { arymodel.reverse(:id) }
+  let(:myary_rev) { adapter.new(model: revmodel, column: :data) }
 
   describe "#new" do
     it "takes model:, and column: as parameters" do
@@ -64,6 +66,14 @@ RSpec.describe CollectionAdapters::ArraySequel do
       expect(arymodel.count).to eq 0
       expect(r2 == "foo" || r2 == "bar").to be true
       expect(r1 != r2).to be true
+    end
+
+    it "Returns items according to dataset order if you create the object with a dataset instead of a model" do
+      myary_rev << "foo"
+      myary_rev << "bar"
+      expect(arymodel.first(data: "foo").pk < arymodel.first(data: "bar").pk).to be true
+      expect(myary_rev.shift).to eq "bar"
+      expect(myary_rev.shift).to eq "foo"
     end
   end
 end
